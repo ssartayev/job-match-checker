@@ -1,8 +1,25 @@
 import { useState } from "react";
+import { match } from "./matcher";
 import type { MatchResult, Status } from "./types";
 import "./App.css";
 
-const API = "http://127.0.0.1:8000/api/match";
+const DEMO_CV = `Alex Lee — Computer Science student (fictional example)
+
+Skills: Python, FastAPI, React, TypeScript, Git, SQL
+
+Built a React website for a community activities club with filters for age, location, and schedule.
+Developed Python API endpoints that return activity listings as JSON.
+Used GitHub branches and pull requests to collaborate with two teammates.
+Stored activity listings and bookings in a SQL database.
+Built a Python prototype that ranks activities against children's interests using semantic text similarity.`;
+
+const DEMO_JOB = `Build responsive web pages using React and TypeScript.
+Develop Python API endpoints for an extracurricular activities platform.
+Use version control to collaborate with other developers.
+Use SQL to store and retrieve activity listings and bookings.
+Build personalized activity recommendations based on children's interests.
+Develop native Android mobile features using Kotlin.
+Deploy production services using Kubernetes on AWS.`;
 
 const STATUS_LABEL: Record<Status, string> = {
   covered: "Covered",
@@ -16,6 +33,7 @@ export default function App() {
   const [result, setResult] = useState<MatchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [started, setStarted] = useState(false);
 
   const ready = cv.trim().length >= 20 && job.trim().length >= 20;
 
@@ -24,19 +42,11 @@ export default function App() {
     setError("");
     setResult(null);
     try {
-      const response = await fetch(API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cv, job }),
-      });
-      if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
-        throw new Error(body.detail ?? `Request failed (${response.status})`);
-      }
-      setResult(await response.json());
+      setResult(await match(cv, job));
+      setStarted(true);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Could not reach the server.",
+        err instanceof Error ? err.message : "Matching could not be completed.",
       );
     } finally {
       setLoading(false);
@@ -51,6 +61,7 @@ export default function App() {
           Paste a job description and your CV to see which requirements you
           actually cover.
         </p>
+        <p className="privacy">Matching runs in your browser. Your CV is not uploaded to this website.</p>
       </header>
 
       <div className="inputs">
@@ -75,9 +86,15 @@ export default function App() {
         </label>
       </div>
 
-      <button className="btn" onClick={check} disabled={!ready || loading}>
-        {loading ? "Checking…" : "Check match"}
-      </button>
+      <div className="actions">
+        <button className="btn" onClick={check} disabled={!ready || loading}>
+          {loading ? (started ? "Checking…" : "Loading AI model and checking…") : "Check match"}
+        </button>
+        <button className="btn secondary" onClick={() => { setCv(DEMO_CV); setJob(DEMO_JOB); setResult(null); setError(""); }} disabled={loading}>
+          Load fictional example
+        </button>
+      </div>
+      {loading && !started && <p className="hint">The AI model downloads on first use. This can take a minute; later checks are faster.</p>}
 
       {error && <p className="error">{error}</p>}
 
@@ -107,6 +124,7 @@ export default function App() {
               </li>
             ))}
           </ul>
+          <p className="hint">Scores show text similarity, not your chance of getting an interview. Check each requirement yourself before applying.</p>
         </section>
       )}
     </div>

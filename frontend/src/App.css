@@ -28,6 +28,10 @@ body {
 
 h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: -0.02em; }
 .sub { margin: 0 0 24px; color: var(--muted); }
+.privacy { margin: -12px 0 24px; color: var(--ok); font-size: 13px; }
+.hint { color: var(--muted); font-size: 13px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn.secondary { color: var(--text); background: var(--surface); border: 1px solid var(--border); }
 
 .inputs {
   display: grid;

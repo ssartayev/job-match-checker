@@ -52,11 +52,13 @@ into separate entries moved that requirement from `missing (0.16)` to
 
 ## Stack
 
-**Frontend** React 19 · TypeScript · Vite
+**Frontend** React 19 · TypeScript · Vite · Transformers.js
 **Backend** FastAPI · sentence-transformers · PyTorch
 
-The model runs in the backend, not the browser — it is ~90 MB and would be a slow
-download on every page load.
+The public site runs the model in the browser, so a pasted CV stays on the visitor's
+device. The model downloads on first use and is then cached by the browser. The
+separate Python backend remains available for local development. Browser inference
+uses a quantized model, so individual scores can differ slightly from the backend.
 
 ## Running it
 
@@ -78,7 +80,7 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:5173>. The model downloads once on first start.
+Open <http://localhost:5173>. No backend is needed for the browser version.
 
 ## Layout
 
@@ -87,7 +89,8 @@ backend/
   app/matcher.py   splitting, embedding and scoring
   app/main.py      FastAPI routes and CORS
 frontend/
-  src/App.tsx      the page, form state and API call
+  src/App.tsx      the page and form state
+  src/matcher.ts   browser-based embedding and matching logic
   src/types.ts     shared result types
 ```
 
